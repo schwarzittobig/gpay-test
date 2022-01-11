@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>super</title>
+</head>
+<body>
+
+<button onclick="pay()">Pay It</button>
+
+<script type="text/javascript">
+    function getGoogleTransactionInfo() {
+        return {
+            countryCode: 'DE',
+            currencyCode: 'EUR',
+            totalPriceStatus: 'FINAL',
+            totalPrice: '1.00'
+        };
+    }
+
+    function pay() {
+
+        const baseRequest = {
+            apiVersion: 2,
+            apiVersionMinor: 0
+        };
+
+        const tokenizationSpecification = {
+            type: 'PAYMENT_GATEWAY',
+            parameters: {
+                'gateway': 'example',
+                'gatewayMerchantId': 'exampleGatewayMerchantId'
+            }
+        };
+
+        const baseCardPaymentMethod = {
+            type: 'CARD',
+            parameters: {
+                allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+                allowedCardNetworks: ["AMEX", "DISCOVER", "INTERAC", "JCB", "MASTERCARD", "VISA"]
+            }
+        };
+
+        const cardPaymentMethod = Object.assign(
+            {},
+            baseCardPaymentMethod,
+            {
+                tokenizationSpecification: tokenizationSpecification
+            }
+        );
+
+        const paymentDataRequest = Object.assign({}, baseRequest);
+        paymentDataRequest.allowedPaymentMethods = [cardPaymentMethod];
+        paymentDataRequest.transactionInfo = getGoogleTransactionInfo();
+        paymentDataRequest.merchantInfo = {
+            merchantName: 'Example Merchant'
+        };
+
+        NativePaymentBridge.proxyCall('loadPaymentData', JSON.stringify(paymentDataRequest));
+
+
+    }
+
+    function onNativePaymentResult(result) {
+        alert("ok: " + result);
+    }
+
+
+</script>
+</body>
+</html>
