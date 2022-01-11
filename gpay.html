@@ -3,12 +3,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>super</title>
+    <title>title</title>
 </head>
 <body>
 
 <button onclick="pay()">Pay It</button>
+<br/><br/>
 
+<button onclick="isReadyToPay()">Is ready to pay</button>
+<br/><br/>
+
+<button onclick="testBridge()">Test bridge</button>
 <script type="text/javascript">
     function getGoogleTransactionInfo() {
         return {
@@ -57,13 +62,62 @@
             merchantName: 'Example Merchant'
         };
 
-        NativePaymentBridge.proxyCall('loadPaymentData', JSON.stringify(paymentDataRequest));
+        NativePaymentBridge.proxyCall('loadPaymentData', JSON.stringify(paymentDataRequest), 'onNativePaymentResult');
 
+    }
+
+    function testBridge() {
+
+
+        NativePaymentBridge.proxyCall('testBridge', 'send me this', 'onNativePaymentResult');
+
+    }
+
+
+    function isReadyToPay() {
+
+        const baseRequest = {
+            apiVersion: 2,
+            apiVersionMinor: 0
+        };
+
+        const tokenizationSpecification = {
+            type: 'PAYMENT_GATEWAY',
+            parameters: {
+                'gateway': 'example',
+                'gatewayMerchantId': 'exampleGatewayMerchantId'
+            }
+        };
+
+        const baseCardPaymentMethod = {
+            type: 'CARD',
+            parameters: {
+                allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+                allowedCardNetworks: ["AMEX", "DISCOVER", "INTERAC", "JCB", "MASTERCARD", "VISA"]
+            }
+        };
+
+        const cardPaymentMethod = Object.assign(
+            {},
+            baseCardPaymentMethod,
+            {
+                tokenizationSpecification: tokenizationSpecification
+            }
+        );
+
+        const paymentDataRequest = Object.assign({}, baseRequest);
+        paymentDataRequest.allowedPaymentMethods = [cardPaymentMethod];
+        paymentDataRequest.transactionInfo = getGoogleTransactionInfo();
+        paymentDataRequest.merchantInfo = {
+            merchantName: 'Example Merchant'
+        };
+
+        NativePaymentBridge.proxyCall('isReadyToPay', JSON.stringify(paymentDataRequest), 'onNativePaymentResult');
 
     }
 
     function onNativePaymentResult(result) {
-        alert("ok: " + result);
+        alert("ok: " + JSON.stringify(result));
     }
 
 
